@@ -58,6 +58,18 @@ then run the script that runs the main program from a cold start, i.e. from rand
 
 python coldpFieldVis.py
 
+It can happen rarely that the following error message appears and the program crashes.
+
+"terminate called after throwing an instance of 'std::runtime_error'
+  what():  t out of range [0,1]
+Aborted (core dumped)"
+
+In this case simply running the script again will produce a different tessellation and the program will run. It seems
+that every so often a tessellation is created by setCentres.cpp that triggers an error message from the morphologica
+libraries, this is rare and so re-running the script will suffice. We are investigating this issue and will update
+the software when it is solved. 
+
+
 To produce the correlation histograms run the matlab script correlationMorph.m
 
 all the output files will be in logsMorph
