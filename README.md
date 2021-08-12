@@ -67,10 +67,12 @@ Aborted (core dumped)"
 In this case simply running the script again will produce a different tessellation and the program will run. It seems
 that every so often a tessellation is created by setCentres.cpp that triggers an error message from the morphologica
 libraries, this is rare and so re-running the script will suffice. We are investigating this issue and will update
-the software when it is solved. 
+the software when it is solved.
 
 
-To produce the correlation histograms run the matlab script correlationMorph.m
+To produce the correlation histograms run the matlab script correlationMorph.m. To produce sufficiently representative
+sample of the full distribution you need to run coldpFieldVis.py at least 10 times. Do not clean up the files after
+each run since each run will add a new set of correlations based on a new random Voronoi tessellation.
 
 all the output files will be in logsMorph
 
