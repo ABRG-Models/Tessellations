@@ -20,7 +20,7 @@ divided by the square root of the rounded area. This is to ensure that the effec
 not contaminated by the effects of changing the area of the region. The json scripts contains a
 switch which allows this adjustment to be turned off.
 
-All output files are written to **logsMorph** directory.
+All output files are written to the **logsMorph** directory.
 
 The files used for determining the distribution of correlations all have
 correlation in their name and their suffix is .data. These files relate to the plots in figure 1 of the paper
@@ -47,9 +47,7 @@ make pFieldVis
 popd # To return to the parent Tessellations directory
 ```
 
-**John - this next sentence doesn't make too much sense**:
-
-To run the code return from a cold start, i.e from intial random fields go to the top directory
+You can now run the code from a cold start, i.e from intial random fields.
 
 First, if it does not exist, create the **logsMorph** directory
 
@@ -58,27 +56,30 @@ mkdir logsMorph
 ```
 
 **pFieldVisjson.sh** is a script which writes out the json configuration file **pFieldVis.json**. The script takes three arguments so that the parameters **Dn**, **Dchi** and **Dc** can be set in the json.
-You can edit the script **pFieldVisjson.sh** if you wish to change any of the other parameters in the **pFieldVis.json** file.
-**pFieldVis.json** will be read by the main program when it runs from another script.
+You can edit the script **pFieldVisjson.sh** if you wish to change any of the other parameters that are written out in the **pFieldVis.json** file.
+**pFieldVis.json** will be read by the main program when it runs from the scripts **coldpFieldVis.py** and **warmpFieldVis.py**.
 
 To observe how **pFieldVisjson.sh** creates pFieldVis.json with your own parameters, try:
 ```
 ./pFieldVisjson.sh 1 2 3
 ```
+then examine the text file **pFieldVis.json**.
 
 The script **coldpFieldVis.py** will run **setCentres**, **pFieldVisjson.sh** and finally the main program **pFieldVis** from a cold start, i.e. from random initial fields:
 ```
 python coldpFieldVis.py
 ```
+It will create several windows in which will appear visualisations of the simulations and it will exit once the simulations have completed.
+
 Sometimes the following error message appears and the program crashes.
 ```
 "terminate called after throwing an instance of 'std::runtime_error'
   what():  t out of range [0,1]
 Aborted (core dumped)"
 ```
-In this case simply running the script again will produce a different tessellation and the program will run. It seems
+In this case simply running the script again will produce a different tessellation and the program should complete. It seems
 that every so often a tessellation is created by **setCentres.cpp** that triggers an error message from the morphologica
-libraries, this is rare and so re-running the script will suffice. We are investigating this issue and will update
+libraries. We are investigating this issue and will update
 the software when it is solved.
 
 To produce the correlation histograms run the matlab script **correlationMorph.m**. To produce sufficiently representative
