@@ -8,7 +8,7 @@ To clone this project and its associated git submodule [morphologica](https://gi
 git clone --recurse-submodules git@github.com:ABRG-Models/Tessellations.git
 ```
 
-This repository contains the code needed to evolve the Keller-Segal equations on a hexagonal
+This repository contains the code needed to evolve the Keller-Segel equations on a hexagonal
 grid. A Voronoi tessellation is created using a number of randomly selected seedpoints which
 are created by running the **setCentres.cpp** program to produce **centres.inp**. The main program
 then computes solutions on this Voronoi tessellation using Runge-Kutta integration of the
@@ -31,8 +31,8 @@ directory.
 The code utilises the morphologica library which is included in the git download from Tessellations. The main
 program **pFieldVis.cpp** also uses .h files which are in the top directory
 **region.h** defines a Voronoi tesselation on a hexagonal grid and defines all the methods for integrating
-the Keller-Segal equations and analyzing the results.
-**ksSolver.h** provides a Keller-Segal solver for the morphed grids which need to be solved in a different way to the
+the Keller-Segel equations and analyzing the results.
+**ksSolver.h** provides a Keller-Segel solver for the morphed grids which need to be solved in a different way to the
 original tessellation.
 **hexGeometry.h** provides a class and methods for creating and manipulating geometric objects on a hexagonal grid.
 **analysis.h** provides helper functions for the other classes.
