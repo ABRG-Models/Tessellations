@@ -109,3 +109,5 @@ have to rename and save them in another directory for reuse.
 
 If you wish to run on from a warm start keeping all parameters the same there is no need to rerun the script to create
 **pFieldVis.json**. The purpose of running the script is to change parameter values by making a new .json file.
+
+**John: I suggest you create some sections in this document for "cold start" and "warm start", but think about whether someone trying to reproduce the result would need to do anything other than the "cold start" and consider documenting on that in this README (maybe with another readme for the warm start/continuation). Keep it as simple as possible. **
