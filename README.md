@@ -57,16 +57,20 @@ First, if it does not exist, create the **logsMorph** directory
 mkdir logsMorph
 ```
 
-You can edit the script **pFieldVisjson.sh** if you wish to change any of the parameters in the **pField.json** file
-that is first written out by **pFieldVisjson.sh** and then read by the main program when it runs. Then run the script
+**pFieldVisjson.sh** is a script which writes out the json configuration file **pFieldVis.json**. The script takes three arguments so that the parameters **Dn**, **Dchi** and **Dc** can be set in the json.
+You can edit the script **pFieldVisjson.sh** if you wish to change any of the other parameters in the **pFieldVis.json** file.
+**pFieldVis.json** will be read by the main program when it runs from another script.
+
+To observe how **pFieldVisjson.sh** creates pFieldVis.json with your own parameters, try:
 ```
-./pFieldVisjson.sh
+./pFieldVisjson.sh 1 2 3
 ```
-After running **pFieldVisjson.sh**, run the script that runs the main program from a cold start, i.e. from random initial fields:
+
+The script **coldpFieldVis.py** will run **setCentres**, **pFieldVisjson.sh** and finally the main program **pFieldVis** from a cold start, i.e. from random initial fields:
 ```
 python coldpFieldVis.py
 ```
-It can happen rarely that the following error message appears and the program crashes.
+Sometimes the following error message appears and the program crashes.
 ```
 "terminate called after throwing an instance of 'std::runtime_error'
   what():  t out of range [0,1]
@@ -95,11 +99,11 @@ If you wish to continue, starting from the state of the previous runs, change th
 ```
 python warmpFieldVis.py
 ```
-you can continue the run at the same parameters or else at different ones this is set in the **warmpField.py** script. If
+you can continue the run at the same parameters or else at different ones this is set in the **warmpFieldVis.py** script. If
 you try a continuation run by using **coldpFieldVis.sh** you will get severe errors because the tessellation seedpoints will
 have been changed so the domains are different.
 
-The startup .h5 files will be overwritten so if you wish to save a configuration for particular parameters you will
+The startup .h5 files (**first.h5**, **second.h5** etc) will be overwritten so if you wish to save a configuration for particular parameters you will
 have to rename and save them in another directory for reuse.
 
 If you wish to run on from a warm start keeping all parameters the same there is no need to rerun the script to create
