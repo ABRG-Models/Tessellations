@@ -11,7 +11,7 @@ command = "cp centres.inp ./logsMorph"
 os.system(command)
 #now set up the parameters to create the json file
 Dn = 36.0
-Chi = 0.0
+Chi = 36.0
 Dc = 0.3 * Dn
 #now create the json file
 command = "./pFieldVisjson.sh " + str(Dn) + " " + str(Chi) + " " + str(Dc)

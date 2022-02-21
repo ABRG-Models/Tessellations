@@ -290,7 +290,6 @@ public:
                 h.setBoundaryHex();
                 N[h.vi][0] = h.vi;
                 this->Cnbr.at(h.vi) = -1;
-                cout << "no ne" << endl;
             }
             else {
                 hexRegionList[h.vi].push_back(region[N[h.vi][0]][0]);//nbr region
@@ -300,14 +299,12 @@ public:
                 h.setBoundaryHex();
                 this->Cnbr.at(h.vi) = -1;
                 N[h.vi][1] =  h.vi;
-                cout << "no nne" << endl;
             }
             else {
                 hexRegionList[h.vi].push_back(region[N[h.vi][1]][0]); //nbr region
             }
             if (!HAS_nNW(h.vi)) {
                 hexRegionList[h.vi].push_back(-1);
-                cout << "no nnw" << endl;
                 this->Cnbr.at(h.vi) = -1;
                 N[h.vi][2] = h.vi;
                 h.setBoundaryHex();
@@ -320,7 +317,6 @@ public:
                 h.setBoundaryHex();
                 this->Cnbr.at(h.vi) = -1;
                 N[h.vi][3] = h.vi;
-                cout << "no nw" << endl;
             }
             else {
                 hexRegionList[h.vi].push_back(region[N[h.vi][3]][0]); //nbr region
@@ -330,7 +326,6 @@ public:
                 h.setBoundaryHex();
                 this->Cnbr.at(h.vi) = -1;
                 N[h.vi][4] = h.vi;
-                cout << "no nsw" << endl;
             }
             else {
                 hexRegionList[h.vi].push_back(region[N[h.vi][4]][0]); //nbr region
@@ -340,7 +335,6 @@ public:
                 h.setBoundaryHex();
                 this->Cnbr.at(h.vi)  = -1;
                 N[h.vi][5] = h.vi;
-                cout << "no nse" << endl;
             }
             else {
                 hexRegionList[h.vi].push_back(region[N[h.vi][5]][0]); //nbr region
@@ -354,7 +348,7 @@ public:
        for (unsigned int j=0;j<NUMPOINTS;j++){
            for (auto h : Hgrid->hexen) {
                if (region[h.vi][0] == (int) j) {
-                   cout << "hex " << h.vi << " region " << region[h.vi][0] << " j " << j<< endl;
+                   //cout << "hex " << h.vi << " region " << region[h.vi][0] << " j " << j<< endl;
                    this->regionHex[j].push_back(h);
                }
            }
@@ -394,24 +388,22 @@ public:
             int centralRegion = region[h.vi][0];
             int oldRegion = centralRegion;
             int newRegion = 0;
-            cout << "just before the Creg logic" << " i " << h.vi << endl;
             for (unsigned int j=0;j<6;j++) {
             //cout << "j = " << j  << " h.vi " << h.vi <<  endl;
                 newRegion =  this->hexRegionList[h.vi][j];
-                cout << " hexRegionList " << hexRegionList[h.vi][j] << endl;
+                //cout << " hexRegionList " << hexRegionList[h.vi][j] << endl;
                 if (centralRegion != newRegion) { //its a boundary hex
-                    cout << "centralRegion " << centralRegion << " newRegion " << newRegion << endl;
+                    //cout << "centralRegion " << centralRegion << " newRegion " << newRegion << endl;
                     h.setBoundaryHex();
                     //this line could have been the problem. Its setting the j neighbour of h.vi to be the central value
                     //I am now setting it to a value that cannot be a h.vi value
                     if (oldRegion != newRegion){ //logic to test if vertex
                         Creg[h.vi]++;
-                        cout << " Creg " << Creg[h.vi] << " oldRegion " << oldRegion << " newRegion " << newRegion << endl;
+                        //cout << " Creg " << Creg[h.vi] << " oldRegion " << oldRegion << " newRegion " << newRegion << endl;
                         oldRegion = newRegion;
                     }
                 }
             }
-           cout << "end of creg loop" << endl;
         }
     }// end of method setCreg
 
@@ -419,9 +411,7 @@ public:
         int result = 0;
         for (unsigned int i = 0; i<this->NUMPOINTS; i++) {
             unsigned int surroundSize = this->regionList[i].size();
-            cout << "surroundSize = " << surroundSize << endl;
             for (unsigned int j=0; j<surroundSize; j++) {
-                cout << "in setInnerRegion loop region " << i << " adj region " << regionList[i][j] << endl;
                 if (regionList[i][j] == -1) {
                     this->innerRegion[i] = false;
                     result++;
@@ -436,21 +426,20 @@ public:
         for (auto h : this->Hgrid->hexen) {
             int centralRegion = region[h.vi][0];
             int newRegion = 0;
-            cout << "just before the internal boundary logic" << " i " << h.vi << endl;
+            //cout << "just before the internal boundary logic" << " i " << h.vi << endl;
             for (unsigned int j=0;j<6;j++) {
             //cout << "j = " << j  << " h.vi " << h.vi <<  endl;
                 newRegion =  this->hexRegionList[h.vi][j];
                 //if (newRegion == -1) continue;
-                cout << " hexRegionList " << hexRegionList[h.vi][j] << endl;
+                //cout << " hexRegionList " << hexRegionList[h.vi][j] << endl;
                 if (centralRegion != newRegion) { //its a boundary hex
-                    cout << "centralRegion " << centralRegion << " newRegion " << newRegion << endl;
+                    //cout << "centralRegion " << centralRegion << " newRegion " << newRegion << endl;
                     h.setBoundaryHex();
                     //this line could have been the problem. Its setting the j neighbour of h.vi to be the central value
                     //I am now setting it to a value that cannot be a h.vi value
                     N[h.vi][j] = h.vi;
                 }
             }
-           cout << "end of setInternalBoundary loop" << endl;
         }
     }// end of method setInternalBoundary
     /*!
@@ -1315,7 +1304,7 @@ FLT renewRegPerimeter (int regNum) {
         for (auto h : this->regionHex[regNum]) {
             cout << h.vi<< " ";
             result++;
-            }
+        }
         return result;
     }
 //function to return fraction of area with nn positive
@@ -1415,7 +1404,7 @@ FLT regnnfrac (int regNum) {
                 if (this->Creg[h.vi] >0){
                     regionBoundary.push_back(h.vi);
                     angle = h.phi;
-                    cout<< " getPhi test " << angle <<  " index " << h.vi << endl;
+                    //cout<< " getPhi test " << angle <<  " index " << h.vi << endl;
                     rB.push_back(angle);
                 }
             } //end of loop on a single region
@@ -1464,13 +1453,13 @@ FLT regnnfrac (int regNum) {
 
                 while (Creg[regionBoundary[irB[(idissect + offset) % irBSize]]] > 1) {
                     newVertex = regionBoundary[irB[(idissect+offset)%irBSize]];
-                    cout << "in vertex loop" << " idissect " << idissect << " Creg "
-                    << Creg[regionBoundary[irB[(idissect + offset) % irBSize]]] << endl;
+                    //cout << "in vertex loop" << " idissect " << idissect << " Creg "
+                   // << Creg[regionBoundary[irB[(idissect + offset) % irBSize]]] << endl;
                     idissect++;
                     Vcount++; //count all vertices even if adjacent
                 } //end of loop to trap adjacent vertices
     //walk along the edge until the next vertex
-                cout << "Creg " << Creg[regionBoundary[irB[(idissect + offset)%irBSize]]] << " boundary " << regionBoundary[irB[(idissect + offset)%irBSize]] << " newVertex Creg " << Creg[newVertex] << endl;
+                //cout << "Creg " << Creg[regionBoundary[irB[(idissect + offset)%irBSize]]] << " boundary " << regionBoundary[irB[(idissect + offset)%irBSize]] << " newVertex Creg " << Creg[newVertex] << endl;
                 regionVertex[iregion].push_back(newVertex);
                 //now fill the edge until the next vertex is encountered.
                 while ((this->Creg[regionBoundary[irB[(idissect + offset)%irBSize]]] == 1) && (idissect < irBSize)) {
@@ -1485,8 +1474,8 @@ FLT regnnfrac (int regNum) {
                     cout<<"WARNING - empty edge=========================================="<<endl;
                     continue;
                 } //loop to catch empty edge
-                cout<<"ihE Size "<<ihE.size() <<endl;
-                cout <<"Vcount "<< Vcount << " Ecount "<< Ecount << endl;
+                //cout<<"ihE Size "<<ihE.size() <<endl;
+                //cout <<"Vcount "<< Vcount << " Ecount "<< Ecount << endl;
                 int regMiddle = region[ihE.rbegin()[1]][0]; // region of the penultimate hex in the edge
                 if (regMiddle != (int) iregion) {
                     cout << "ERROR: penultimate hex in edge has different region" << endl;
@@ -1534,16 +1523,13 @@ FLT regnnfrac (int regNum) {
             ifile << "number of nbrs for region " << iregion << " is " << regionList[iregion].size() << endl;
             for (unsigned int inbr = 0; inbr < regionList[iregion].size(); inbr++) {
                 ifile << " r " << iregion << " rNbr " << regionList[iregion][inbr];
-                cout << " r " << iregion << " rNbr " << regionList[iregion][inbr];
                 ifile << endl;
                 ifile << "---------------------------------------"<< endl;
             }
-            cout <<endl;
     // write to vertexlist file, vertex x and y coordinates
             lfile << "number of vertices for region " << iregion << " is " << regionVertex[iregion].size() << endl;
             for (unsigned int idx=0; idx < irB.size(); idx++){
                 for (unsigned int ivtx=0; ivtx < regionVertex[iregion].size(); ivtx++) {
-                    cout << " in vtx loop " << ivtx << " idx " << idx << " vertex " << regionVertex[iregion][ivtx] << " irB " << irB[idx] << endl;
                     if (regionBoundary[irB[idx]] == regionVertex[iregion][ivtx]) {
                         lfile << " vertex " << regionVertex[iregion][ivtx] << " x " << Hgrid->d_x[regionVertex[iregion][ivtx]] << " y " << Hgrid->d_y[regionVertex[iregion][ivtx]] << " theta " << rB[irB[idx]];
                         lfile << " vertex regions " << region[regionVertex[iregion][ivtx]][0] << " , " <<  region[regionVertex[iregion][ivtx]][1] <<  " , " << region[regionVertex[iregion][ivtx]][2] <<endl;
@@ -1677,6 +1663,12 @@ FLT regnnfrac (int regNum) {
                 if (first.size() == second.size() && first.size()*second.size() != 0)
                 {
                     correlationValue = this->correlate_Eqvector(first, second, lzeroMean);
+                    if (correlationValue <= -2) continue;
+                    if (correlationValue > -2) {
+                        result = fabs(correlationValue);
+                        countResult++;
+                        correl << correlationValue << " " << endl;
+                    }
                     ratio = 1.0;
                     edgefile << " if 1 region " << i << " c1 " << count1 << " j " << *j << " c2  " <<  count2 << " cV " << correlationValue << " ratio " << ratio << endl;
                     //edgefile << i << " Size1 " << edges[edgeIndex1].size() << " j " << *j << " Size2  " << edges[edgeIndex2].size() << endl;
@@ -1686,6 +1678,7 @@ FLT regnnfrac (int regNum) {
                 {
                     dinterp = this->equalize_vector(second,first);
                     correlationValue = this->correlate_Eqvector(first, dinterp, lzeroMean);
+                    if (correlationValue <= -2) continue;
                     ratio = 1.0 * second.size() / (1.0 * first.size());
                     if (correlationValue > -2) {
                         result += fabs(correlationValue);
@@ -1699,6 +1692,7 @@ FLT regnnfrac (int regNum) {
                 {
                     dinterp = this->equalize_vector(first,second);
                     correlationValue = this->correlate_Eqvector(dinterp, second, lzeroMean);
+                    if (correlationValue <= -2) continue;
                     ratio = 1.0 * first.size() / (1.0 * second.size());
                     if (correlationValue > -2) {
                         result += fabs(correlationValue);
@@ -1744,7 +1738,6 @@ FLT regnnfrac (int regNum) {
                 vector<FLT> tempvect;
                 FLT jump;
                 FLT hold = ruf.get();
-                //cout << "hold = " << hold << endl;
                 if (hold < 0.5)
                     jump = 1.0;
                 else
@@ -1773,7 +1766,7 @@ FLT regnnfrac (int regNum) {
                 this->edgeVals.insert(p);
 
                 printFLTVect(edgeVal,tempvect);
-                cout << "size of edgeVal region " << i << " edge " << *j << " is " << tempvect.size() << " xstep is " << xstep << " pi " << xstep*xcount << endl;
+                //cout << "size of edgeVal region " << i << " edge " << *j << " is " << tempvect.size() << " xstep is " << xstep << " pi " << xstep*xcount << endl;
             } //end of loop over edges of a region
         } // end of loop over all regions
         cout << "in insert_cosines edges size " << this->edges.size() << " edgeVals size " << this->edgeVals.size() << endl;
@@ -1967,24 +1960,29 @@ FLT regnnfrac (int regNum) {
                    dinterp = equalize_vector(first , second);
                    s3 = dinterp.size();
                    corr = correlate_Eqvector(dinterp, second, lzero);
-                   if (corr == -2) {
-                       continue;
+                    if (corr <= -2) continue; //we are not debugging just ignoring
+                   if (corr > -2) {
+                       kfile << corr << endl;
                    }
                }
                else if (s1 > s2) {
                    dinterp = equalize_vector(second, first);
                    s3 = dinterp.size();
                    corr = correlate_Eqvector(dinterp, first, lzero);
-                   if (corr == -2) {
-                       continue;
+                if (corr <= -2) continue; //we are not debugging just ignoring
+                   if (corr > -2) {
+                       kfile << corr << endl;
                    }
                }
                else {
                    corr = correlate_Eqvector(first, second, true);
+                   if (corr <= -2) continue; //we are not debugging just ignoring
                    s3 = 0;
+                   if (corr > -2) {
+                       kfile << corr << endl;
+                   }
                }
                jfile <<  " r1 " << r1 << " rr1 " << rr1 <<" s1 " << s1 << " r2 " << r2 << " rr2 " << rr2 << " s2 " << s2 << " s3 " << s3 << " correlate " << corr << endl << endl;
-               kfile << corr << endl;
            } // end of if test for empty edge
         count++;
         } // end of while loop
@@ -2438,7 +2436,7 @@ FLT regnnfrac (int regNum) {
         for (int i = 0; i < size;i++) {
             hexGeometry::point pa = this->vCoords[regNum][((i-1)+size)%size];
             hexGeometry::point pb = this->vCoords[regNum][i];
-            cout << "pa " << pa.first << " , " << pa.second << " pb " << pb.first << " , " << pb.second << endl;
+            //cout << "pa " << pa.first << " , " << pa.second << " pb " << pb.first << " , " << pb.second << endl;
             segments.push_back(hGeo->hexGeometry::createLineSegment(pa,pb));
         }
         return segments;
@@ -2878,11 +2876,11 @@ FLT regnnfrac (int regNum) {
   void renewRegion(int regNum, list<morph::Hex> hexen)
   {
     this->regionHex[regNum].clear();
-    cout << "regionHex" << regNum << " size " << this->regionHex[regNum].size() << endl;
     for (auto& h : hexen) //repopulate regionHex
     {
       this->regionHex[regNum].push_back(h);
     }
+    cout << "regionHex" << regNum << " size " << this->regionHex[regNum].size() << endl;
   }
 
   //method to renew polars and boundary
@@ -3121,6 +3119,12 @@ FLT regnnfrac (int regNum) {
             if (first.size() == second.size() && second.size()*first.size() != 0)
             {
                 correlationValue = this->correlate_Eqvector(first, second, lZero);
+                if (correlationValue <= -2) continue; //we are not debugging just ignoring
+                if (correlationValue > -2) {
+                    result = fabs(correlationValue);
+                    countResult++;
+                    corrfile << correlationValue << " " << endl;
+                }
                 ratio = 1.0;
                 result += fabs(correlationValue);
                 countResult++;
@@ -3132,6 +3136,7 @@ FLT regnnfrac (int regNum) {
             {
                 dinterp = this->equalize_vector(second,first);
                 correlationValue = this->correlate_Eqvector(dinterp, first, lZero);
+                if (correlationValue <= -2) continue; //we are not debugging just ignoring
                 ratio = 1.0 * second.size() / (1.0 * first.size());
                 if (correlationValue > -2) {
                     result += fabs(correlationValue);
@@ -3145,6 +3150,7 @@ FLT regnnfrac (int regNum) {
             {
                 dinterp = this->equalize_vector(first,second);
                 correlationValue = this->correlate_Eqvector(dinterp, second, lZero);
+                if (correlationValue <= -2) continue; //we are not debugging just ignoring
                 ratio = 1.0 * first.size() / (1.0 * second.size());
                 if (correlationValue > -2) {
                     result += fabs(correlationValue);

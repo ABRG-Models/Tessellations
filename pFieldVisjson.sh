@@ -22,6 +22,7 @@
 ## boundaryFalloffDist: defines boundary layer when creating random i.c.
 ## nnInitialOffset: value of n for spatially uniform solution
 ## ccInitialOffset: value of c for spatially uniform solution
+## diffTol: tolerance value for convergence
 ## overwrite_logs: not used in this code
 ## skipMorph: if true return after the morph 0 run, i.e. just calculate for polygonal Voronoi tessellation
 ## lPerturb: not used in this code
@@ -44,27 +45,28 @@
     "Dc" : $3,
     "scale": 8,
     "xspan": 5.0,
-    "numsteps": 10000,
+    "numsteps": 3000000,
     "numAdjust" : 100000,
     "numprint" : 999,
-    "Lcontinue" : 0,
-    "LfixedSeed" : 0,
-    "Lgraphics" : 1,
-    "LDn" : 1,
+    "Lcontinue" : false,
+    "LfixedSeed" : false,
+    "Lgraphics" : true,
+    "LDn" : false,
     "numSectors" : 12,
     "aNoiseGain" : 0.1,
     "boundaryFalloffDist" : 0.0078,
     "nnInitialOffset" : 1.0,
     "ccInitialOffset" : 2.5,
+    "diffTol" : 1e-10,
     "overwrite_logs" : true,
-    "skipMorph" : 0,
-    "lPerturb" : 1,
+    "skipMorph" : false,
+    "lPerturb" : true,
     "iter" : "0",
-    "lminRadius" : 0,
-    "off" : 1,
+    "lminRadius" : false,
+    "off" : true,
     "plotevery" : 999,
     "saveplots" : true,
-    "vidframes" : false,
+    "vidframes" : true,
     "win_width" : 1025,
     "NUMPOINTS" : 41
 }

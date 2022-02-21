@@ -20,6 +20,8 @@ divided by the square root of the rounded area. This is to ensure that the effec
 not contaminated by the effects of changing the area of the region. The json scripts contains a
 switch which allows this adjustment to be turned off.
 
+The programs and scripts in this repository allow the reproduction of Figures 3d and 3e of the paper.
+
 All output files are written to the **logsMorph** directory.
 
 The files used for determining the distribution of correlations all have
@@ -86,6 +88,9 @@ To produce the correlation histograms run the matlab script **correlationMorph.m
 sample of the full distribution you need to run **coldpFieldVis.py** at least 10 times. Do not clean up the files after
 each run since each run will add a new set of correlations based on a new random Voronoi tessellation.
 
+To produce the alpha values and histograms of Fig3d and Fig3e run the following four python scripts
+Fig3dAdj.py Fig3dRand.py Fig3eAdj.py Fig3eRan.py
+
 All the output files will be in **logsMorph**.
 
 If you want to run with different parameters you will need to cleanup logsMorph otherwise the new results will be appended
@@ -96,7 +101,7 @@ new results to be appended to the old.
 ```
 This will leave the startup files in **logsMorph** which have the suffix .h5
 
-If you wish to continue, starting from the state of the previous runs, change the relevant parameter in **pFieldjson.sh** and run
+If you wish to continue, starting from the state of the previous runs, change the relevant parameter (Lcontinue) in **pFieldjson.sh** and run
 ```
 python warmpFieldVis.py
 ```

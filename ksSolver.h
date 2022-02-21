@@ -63,30 +63,42 @@ class ksSolver
 public:
 // list of objects visible to member functions
     int scale;
-	FLT xspan;
+    FLT xspan;
     int n;
     FLT ds;
-	FLT nnInitialOffset = 1.0;
-	FLT ccInitialOffset = 2.5;
-	FLT boundaryFalloffDist = 0.024;
+    FLT nnInitialOffset = 1.0;
+    FLT ccInitialOffset = 2.5;
+    FLT boundaryFalloffDist = 0.024;
     pair<FLT,FLT> seedPoint;
-	BezCurvePath<float> bound;
-	string logpath;
+    BezCurvePath<float> bound;
+    string logpath;
     vector<vector<int> > N; // hex neighbourhood
     vector<FLT> NN, CC; //hold the field values for each he
     morph::HexGrid* Hgrid;
+    FLT sum_NN;
+    FLT sum_CC;
+    FLT sum_lapNN;
+    FLT sum_CT;
+    FLT sum_lapCC;
+    FLT overds;
+    FLT lengthScale;
+    vector<FLT> lapNN;
+    vector<FLT> CT;
+    vector<FLT> lapCC;
 // empty constructor
     ksSolver(){};
 // constructor with HexGrid passed in
-    ksSolver (morph::HexGrid*  Hgrid, std::string logpath) {
+    ksSolver (morph::HexGrid*  Hgrid, std::string logpath, FLT lengthScale=1.0) {
         this->Hgrid = Hgrid;
         this->seedPoint = this->Hgrid->computeCentroid(this->Hgrid->hexen);
         this->logpath = logpath;
         ofstream afile (this->logpath + "/ksdebug.out",ios::app );
         this->seedPoint = this->Hgrid->computeCentroid(this->Hgrid->hexen);
         this->ds = this->Hgrid->hexen.begin()->d;
+        this->lengthScale = lengthScale;
         n = 0;
         n = this->Hgrid->num();
+        this->overds = 1.0 / (this->ds*this->ds*this->lengthScale*this->lengthScale);
         afile << " max x " << this->Hgrid->getXmax(0.0) << " min x " << this->Hgrid->getXmin(0.0) << endl;
         afile << "before filling H " << this->Hgrid->num() << endl;
         afile << "after creating HexGri ds = "<< this->ds << endl;
@@ -99,15 +111,15 @@ public:
         this->N.resize(n);
         this->setHexType();
         this->NN.resize(n);
-        CC.resize(n);
+        this->CC.resize(n);
+        this->lapNN.resize(n,0.0);
         afile << "after alloc NN and CC" <<endl;
         pair<FLT, FLT> centroid = set_kS_polars(this->seedPoint);
         cout << " end of ksSolver from file " << " x seedPoint " << seedPoint.first << " y seedPoint " << seedPoint.second << endl;
         cout << " end of ksSolver from file " << " centroid x " << centroid.first << " centroid y " << centroid.second << endl;
     }; // end of ksSolver constructor
-
 // constructor with radius passed in for solving on radial boundaries
-    ksSolver (int scale, FLT xspan, string logpath, float radius, pair<float, float> seedPoint) {
+    ksSolver (int scale, FLT xspan, string logpath, FLT radius, pair<FLT, FLT> seedPoint, FLT lengthScale=1.0) {
         this->scale = scale;
         this->xspan = xspan;
         this->logpath = logpath;
@@ -116,6 +128,7 @@ public:
         ofstream afile (this->logpath + "/ksdebug.out",ios::app );
         FLT s = pow(2.0, this->scale-1);
         this->ds = 1.0/s;
+        this->lengthScale = lengthScale;
         n = 0;
         Hgrid = new HexGrid(this->ds, this->xspan, 0.0, morph::HexDomainShape::Boundary);
         n = Hgrid->num();
@@ -127,9 +140,11 @@ public:
         afile << "after setting boundary on  H " << Hgrid->num() << " centroid.x " << Hgrid->boundaryCentroid.first << " centroid.y " << Hgrid->boundaryCentroid.second << endl;
         afile << "after setting boundary on  H " << Hgrid->num() << endl;
         n = Hgrid->num();
+        this->overds = 1.0 / (this->ds*this->ds*this->lengthScale*this->lengthScale);
         afile << " max x " << Hgrid->getXmax(0.0) << " min x " << Hgrid->getXmin(0.0) << endl;
         afile << "after  filling H in circular constructor" << " n = " << n <<endl;
         N.resize(n);
+        /*
         for (auto &h : this->Hgrid->hexen){
             this->N[h.vi].resize(6);
             if (!HAS_nE(h.vi)) {
@@ -180,14 +195,16 @@ public:
                 this->N[h.vi][5] = Hgrid->d_nse[h.vi];
             }
         } //end of loop over HexGri this->setHexType();
+        */
         /*
         Hgrid->computeDistanceToBoundary();
         for (auto &h : Hgrid->hexen) {
             afile  << "dist to bdry " << h.distToBoundary << " for " << h.vi << endl;
         }
         */
+        this->setHexType();
         this->NN.resize(n);
-        CC.resize(n);
+        this->CC.resize(n);
         afile << "after alloc NN and CC" <<endl;
         pair<FLT, FLT> centroid = set_kS_polars(this->seedPoint);
         cout << " end of ksSolver circle radius " << " x seedPoint " << seedPoint.first << " y seedPoint " << seedPoint.second << endl;
@@ -195,16 +212,18 @@ public:
     }; // end of ksSolver constructor
 
 // Constructor with boundary passed in
-    ksSolver (int scale, FLT xspan, string logpath, BezCurvePath<float> bound, pair<FLT,FLT> seedPoint) {
+    ksSolver (int scale, FLT xspan, string logpath, BezCurvePath<FLT> bound, pair<FLT,FLT> seedPoint, FLT lengthScale=1.0) {
         this->scale = scale;
         this->xspan = xspan;
         this->logpath = logpath;
         this->bound = bound;
         this->seedPoint = seedPoint;
+        this->lengthScale = lengthScale;
         ofstream afile (this->logpath + "/ksdebug.out",ios::app );
         FLT s = pow(2.0, this->scale-1);
         this->ds = 1.0/s;
         n = 0;
+        this->overds = 1.0 / (this->ds*this->ds*this->lengthScale*this->lengthScale);
         Hgrid = new HexGrid(this->ds, this->xspan, 0.0, morph::HexDomainShape::Boundary);
         n = Hgrid->num();
         afile << " max x " << Hgrid->getXmax(0.0) << " min x " << Hgrid->getXmin(0.0) << endl;
@@ -292,102 +311,146 @@ public:
 
 // method to calculate the Laplacian
     vector<FLT> getLaplacian(vector<FLT> Q, FLT dx) {
-        FLT overds = 1./(1.5*29.0*29.0*dx*dx);
         vector<FLT> L(n,0.);
         for(auto &h : this->Hgrid->hexen){
          int i = int(h.vi);
-            L[i]=(Q[N[i][0]]+Q[N[i][1]]+Q[N[i][2]]+Q[N[i][3]]+Q[N[i][4]]+Q[N[i][5]]-6.*Q[i])*overds;
+            L[i]=(Q[N[i][0]]+Q[N[i][1]]+Q[N[i][2]]+Q[N[i][3]]+Q[N[i][4]]+Q[N[i][5]]-6.*Q[i])*this->overds/1.5;
         }
         return L;
     }
 
-		vector<FLT> chemoTaxis(vector<FLT> Q, vector<FLT> P, FLT dx) {
-		vector<FLT> cT(n,0.);
-          FLT overds = 1./(1.5*29.0*29.0*dx*dx);
+    vector<FLT> chemoTaxis(vector<FLT> Q, vector<FLT> P, FLT dx) {
+        vector<FLT> cT(n,0.);
+        //FLT overds = 1./(1.5*dx*dx*841.0);
 
         for (auto &h : Hgrid->hexen) {
-		  unsigned int i = h.vi;
+            unsigned int i = h.vi;
         // finite volume method Lee et al. https://doi.org/10.1080/00207160.2013.864392
-	      FLT dr0Q = (Q[N[i][0]]+Q[i])/2.;
-	      FLT dg0Q = (Q[N[i][1]]+Q[i])/2.;
-	      FLT db0Q = (Q[N[i][2]]+Q[i])/2.;
-	      FLT dr1Q = (Q[N[i][3]]+Q[i])/2.;
-	      FLT dg1Q = (Q[N[i][4]]+Q[i])/2.;
-	      FLT db1Q = (Q[N[i][5]]+Q[i])/2.;
+            FLT dr0Q = (Q[N[i][0]]+Q[i])/2.;
+            FLT dg0Q = (Q[N[i][1]]+Q[i])/2.;
+            FLT db0Q = (Q[N[i][2]]+Q[i])/2.;
+            FLT dr1Q = (Q[N[i][3]]+Q[i])/2.;
+            FLT dg1Q = (Q[N[i][4]]+Q[i])/2.;
+            FLT db1Q = (Q[N[i][5]]+Q[i])/2.;
 	  //FLT ncentre = Q[i];
-
-          FLT dr0P = P[N[i][0]]-P[i];
-          FLT dg0P = P[N[i][1]]-P[i];
-          FLT db0P = P[N[i][2]]-P[i];
-	      FLT dr1P = P[N[i][3]]-P[i];
-          FLT dg1P = P[N[i][4]]-P[i];
-          FLT db1P = P[N[i][5]]-P[i];
+            FLT dr0P = P[N[i][0]]-P[i];
+            FLT dg0P = P[N[i][1]]-P[i];
+            FLT db0P = P[N[i][2]]-P[i];
+            FLT dr1P = P[N[i][3]]-P[i];
+            FLT dg1P = P[N[i][4]]-P[i];
+            FLT db1P = P[N[i][5]]-P[i];
 
 
 	  //finite volume for NdelC, h = s/2
-	  cT[i] = (dr0Q*dr0P+dg0Q*dg0P+db0Q*db0P+dr1Q*dr1P+dg1Q*dg1P+db1Q*db1P)*overds;
+            cT[i] = (dr0Q*dr0P+dg0Q*dg0P+db0Q*db0P+dr1Q*dr1P+dg1Q*dg1P+db1Q*db1P)*this->overds/1.5;
 
 	  //G[i] = (drN*drC+dgN*dgC+dbN*dbC)/(6.*ds*ds) + NN[i]*lapC[i];
 
         } //matches for on i
-		return cT;
-	} //end of function chemoTaxis
+        return cT;
+    } //end of function chemoTaxis
 
   // function to compute the derivative
-     void compute_dNNdt(vector<FLT>& inN, vector<FLT>& dNdt, FLT Dn, FLT Dchi) {
-        vector<FLT> lapN(this->n,0);
-		vector<FLT> cTaxis(this->n,0);
-		//cout << "in compute_dNN just before laplacian" << endl;
-		lapN = getLaplacian(inN,this->ds);
-        cTaxis = chemoTaxis(inN,this->CC,this->ds);
+    void compute_dNNdt(vector<FLT>& inN, vector<FLT>& dNdt, FLT Dn, FLT Dchi) {
+        //vector<FLT> cTaxis(this->n,0);
+	this->lapNN = getLaplacian(inN,this->ds);
+        this->CT = chemoTaxis(inN,this->CC,this->ds);
         FLT a = 1., b = 1.;
-		//cout << "in compute_dNN just before the loop" << endl;
         for (int h=0; h < this->n; h++) {
-          dNdt[h] = a-b*inN[h] + Dn*lapN[h] - Dchi*cTaxis[h];
+            dNdt[h] = a-b*inN[h] + Dn*this->lapNN[h] - Dchi*this->CT[h];
         }
-	}
+    } //end of method compute_dNNdt
 
-	void compute_dCCdt(vector<FLT>& inC, vector<FLT>&  dCdt, FLT Dc) {
+    void compute_dCCdt(vector<FLT>& inC, vector<FLT>&  dCdt, FLT Dc) {
         FLT beta = 5.;
         FLT mu = 1;
-		//cout << " before calls to Laplacian " << endl;
+	//cout << " before calls to Laplacian " << endl;
         vector<FLT> lapC(this->n,0);
-		lapC = getLaplacian(inC,this->ds);
+        this->lapCC = getLaplacian(inC,this->ds);
         FLT N2;
         for(int h=0; h < this->n;h++){
             N2 = this->NN[h]*this->NN[h];
             dCdt[h] =  beta*N2/(1.+N2) - mu*inC[h] + Dc*lapC[h];
         }
-    }
+    } //end of compute_dCCdt
+
+  //function to timestep coupled equations Euler step
+    void stepEuler(FLT dt, FLT Dn, FLT Dchi, FLT Dc) {
+        // Set up boundary conditions with ghost points
+        //cout << " in time step before ghost points" << endl;
+        for(auto h : Hgrid->hexen){
+            if (h.boundaryHex()) {
+                for (int j=0;j<6;j++) {
+                    int i = int(h.vi);
+                    if (N[h.vi][j] == i) {
+                        this->NN[N[h.vi][j]] = NN[h.vi];
+                        this->CC[N[h.vi][j]] = CC[h.vi];
+                    }
+                }
+            }
+        }
+        // set up sum_ variables
+        sum_NN = 0.0f;
+        sum_CC = 0.0f;
+        sum_lapNN = 0.0f;
+        sum_lapCC = 0.0f;
+
+
+        FLT beta = 5.;
+        FLT a = 1., b = 1., mu = 1;
+        this->lapNN = getLaplacian(NN,ds);
+        this->lapCC = getLaplacian(CC,ds);
+        this->CT = chemoTaxis(NN,CC,ds);
+
+        // step N
+        for (auto h : Hgrid->hexen) {
+            NN[h.vi] += dt*( a-b*NN[h.vi] + Dn*this->lapNN[h.vi] - Dchi*CT[h.vi]);
+            this->sum_NN += fabs(this->NN[h.vi] - 1.0);
+            this->sum_CT += fabs(this->CT[h.vi]);
+        }
+
+        // step C
+        FLT N2;
+        for(auto h : Hgrid->hexen) {
+            unsigned int i = h.vi;
+            N2 = NN[i]*NN[i];
+            CC[i] += dt*( beta*N2/(1.+N2) - mu*CC[i] + Dc*lapCC[i] );
+            this->sum_CC += fabs(this->CC[i]);
+            this->sum_lapNN += fabs(this->lapNN[i]);
+            this->sum_lapCC += fabs(this->lapCC[i]);
+        }
+        sum_NN = sum_NN/(1.0*this->n);
+        sum_CC = sum_CC/(1.0*this->n);
+        sum_lapNN = sum_lapNN/(1.0*this->n);
+        sum_lapCC = sum_lapCC/(1.0*this->n);
+    }//end step
 
   //function to timestep coupled equations solely b.c. on the flux
     void step(FLT dt, FLT Dn, FLT Dchi, FLT Dc)
-	{
-        dt = dt * 2.5 / Dn;
-
-        // cout  << "value of NN[5] start Runge " << this->NN[5] << endl;
-
-
+    {
+        // set up sum_ variables
+        sum_NN = 0.0f;
+        sum_lapNN = 0.0f;
+        sum_CC = 0.0f;
+        sum_lapCC = 0.0f;
         // Set up boundary conditions with ghost points
         //cout << " in time step before ghost points" << endl;
         for(auto &h : Hgrid->hexen)
-		{
-	   // cout << "top of ghost loop hex " << h.vi << " x " << h.x << " y " << h.y << endl;
-            if(h.boundaryHex())
-			{
-                for(int j=0;j<6;j++)
-				{
-		            int i = int(h.vi);
-		 // cout << "in ghost loop j = " << j << " i= " << i << " Nbr " << N[h.vi][j] << endl;
+	{
+	    //cout << "top of ghost loop hex " << h.vi << " x " << h.x << " y " << h.y << endl;
+            if (h.boundaryHex())
+	    {
+                for (int j=0;j<6;j++)
+                {
+		    int i = int(h.vi);
                     if(N[h.vi][j] == i) {
        	                this->NN[N[h.vi][j]] = this->NN[h.vi];
-			//   cout << " NN " << NN[N[h.vi][j]] << " NN central " << NN[h.vi] << endl;
-	                    this->CC[N[h.vi][j]] = this->CC[h.vi];
-	                }
+	                this->CC[N[h.vi][j]] = this->CC[h.vi];
 	            }
-	         }
-          }
-
+	        }
+	    }
+        }
+        //std::cout << "after ghost hex loop morph 1" << std::endl;
         // 2. Do integration of NN
         {
             // Runge-Kutta integration for A. This time, I'm taking
@@ -404,9 +467,9 @@ public:
             /*
              * Stage 1
              */
-			 //cout << "in ksSolver before compute_dNNdt" << endl;
+	    //cout << "in ksSolver before compute_dNNdt" << endl;
             this->compute_dNNdt (this->NN, dNdt, Dn, Dchi);
-			 //cout << "in ksSolver after compute_dNNdt" << endl;
+	    //cout << "in ksSolver after compute_dNNdt" << endl;
             for (int h=0; h< this->n; ++h) {
                 K1[h] = dNdt[h] * dt;
                 Ntst[h] = this->NN[h] + K1[h] * 0.5 ;
@@ -445,10 +508,12 @@ public:
              */
             for (int h=0;h<this->n;h++) {
                 this->NN[h] += ((K1[h] + 2.0 * (K2[h] + K3[h]) + K4[h])/(FLT)6.0);
-				//this->NN[i] = i * 1.0;
+                this->sum_NN += fabs(this->NN[h]);
+                this->sum_lapNN += fabs(this->lapNN[h]);
             }
         }
 
+        //std::cout << "after integration of NN" << std::endl;
         // 3. Do integration of B
         {
             // Ctst: "B at a test point". Ctst is a temporary estimate for B.
@@ -462,11 +527,13 @@ public:
             /*
              * Stage 1
              */
+          //  std::cout << "before compute_dCCdt " << std::endl;
             this->compute_dCCdt (this->CC, dCdt, Dc);
             for (int h=0; h < this->n; ++h) {
                 K1[h] = dCdt[h] * dt;
                 Ctst[h] = this->CC[h] + K1[h] * 0.5 ;
             }
+            // std::cout << "after compute_dCCdt " << std::endl;
 
             /*
              * Stage 2
@@ -476,7 +543,7 @@ public:
                 K2[h] = dCdt[h] * dt;
                 Ctst[h] = this->CC[h] + K2[h] * 0.5;
             }
-
+            // std::cout << "after CC stage 2" << std::endl;
             /*
              * Stage 3
              */
@@ -486,6 +553,7 @@ public:
                 Ctst[h] = this->CC[h] + K3[h];
             }
 
+            //std::cout << "after CC stage 3" << std::endl;
             /*
              * Stage 4
              */
@@ -493,6 +561,7 @@ public:
             for (int h=0; h < this->n; ++h) {
                 K4[h] = dCdt[h] * dt;
             }
+            //std::cout << "after CC stage 4" << std::endl;
 
             /*
              * Final sum together. This could be incorporated in the
@@ -501,8 +570,18 @@ public:
              */
             for (int h=0; h < this->n; ++h) {
                 this->CC[h] += ((K1[h] + 2.0 * (K2[h] + K3[h]) + K4[h])/(FLT)6.0);
+                //std::cout << "before sumCC" << std::endl;
+                this->sum_CC += fabs(this->CC[h]);
+                //std::cout << "after sumCC" << std::endl;
+                this->sum_lapCC += this->lapCC[h];
+                //std::cout << "after sumlapCC" << std::endl;
             }
+           // std::cout << "after integration of CC" << std::endl;
         }
+        sum_NN = sum_NN/(1.0*this->n) - 1.0;
+        sum_lapNN = sum_lapNN/(1.0*this->n);
+        sum_CC = sum_NN/(1.0*this->n) - 2.5;
+        sum_lapCC = sum_lapNN/(1.0*this->n);
         //cout  << "value of NN[5] end Runge " << this->NN[5] <<  " number of hexes " << this->n << endl;
     }//end step
 
@@ -579,18 +658,18 @@ public:
         int hexcount = 0;
         FLT maxPhi = -10.0;
         FLT minPhi = 10.0;
-	    cout <<"in set polars ksSolver xcentre" << centre.first << " y_centre  " << centre.second <<endl;
+	cout <<"in set polars ksSolver xcentre" << centre.first << " y_centre  " << centre.second <<endl;
         for (auto &h : this->Hgrid->hexen) {
             hexcount++;
             xav += h.x;
             yav += h.y;
         }
-		//cout << "after set centres " << endl;
-		if (hexcount != 0) {
-        xav = xav / (hexcount*1.0);
-        yav = yav / (hexcount*1.0);
-		}
-		else {
+	//cout << "after set centres " << endl;
+	if (hexcount != 0) {
+            xav = xav / (hexcount*1.0);
+            yav = yav / (hexcount*1.0);
+	}
+	else {
 		  //cout << " in set_polars no hexes in region "<<endl;
 		  }
 //go over the region and put the hexes into bins then average
@@ -601,13 +680,13 @@ public:
             h.r = sqrt((dx - centre.first)*(dx - centre.first)
 			+ (dy - yav)*(dy - yav));
             if (dy >= centre.second) {
-               angle =   atan2((dy - centre.second), (dx - centre.first));
+                angle =   atan2((dy - centre.second), (dx - centre.first));
 			  h.phi = angle;
-			  }
+	    }
             else {
                 angle =  2*PI + atan2((dy - centre.second), (dx - centre.first));
 			    h.phi = angle;
-			}
+	    }
             if (angle < minPhi) {
                 minPhi = angle;
             }
